@@ -11,7 +11,7 @@ app.use(userRouter);
 
 // Test route to verify server is running
 app.get('/', (req, res) => {
-  res.json({ success: true, message: 'Backend API is running successfully!' });
+  res.json({ success: true, message: 'Backend API is running successfully on Vercel!' });
 });
 
 // Error handling middleware
@@ -27,15 +27,19 @@ app.use((err, req, res, next) => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Promise Rejection:', err.message);
-  // Don't exit the process, just log the error
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err.message);
-  // Don't exit the process, just log the error
 });
 
-app.listen(8000, 'localhost', () => {
-  console.log('Server is running on port 8000');
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(8000, 'localhost', () => {
+    console.log('Server is running on port 8000');
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;
