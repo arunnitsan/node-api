@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - User Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .response.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .api-url {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 API Test Dashboard</h1>
+            <p>Test your Vercel-deployed Authentication API</p>
+        </div>
+
+        <div class="content">
+            <div class="api-url">
+                <strong>API Base URL:</strong> https://node-1d7q7cziz-nitsans-projects-6e90081c.vercel.app
+            </div>
+
+            <div id="connectionStatus" class="status disconnected">
+                🔴 Checking API connection...
+            </div>
+
+            <!-- Registration Form -->
+            <div class="form-section">
+                <h2>📝 User Registration</h2>
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label for="regFullname">Full Name:</label>
+                        <input type="text" id="regFullname" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email:</label>
+                        <input type="email" id="regEmail" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">Password:</label>
+                        <input type="password" id="regPassword" required placeholder="Enter password (min 8 chars)">
+                    </div>
+                    <div class="form-group">
+                        <label for="regConfirmPassword">Confirm Password:</label>
+                        <input type="password" id="regConfirmPassword" required placeholder="Confirm password">
+                    </div>
+                    <button type="submit">Register User</button>
+                </form>
+                <div id="registrationResponse" class="response info" style="display: none;"></div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="form-section">
+                <h2>🔑 User Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email:</label>
+                        <input type="email" id="loginEmail" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password:</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+                <div id="loginResponse" class="response info" style="display: none;"></div>
+            </div>
+
+            <!-- Logout Section -->
+            <div class="form-section">
+                <h2>🚪 User Logout</h2>
+                <p>Logout the currently authenticated user</p>
+                <button id="logoutBtn" onclick="logout()">Logout</button>
+                <div id="logoutResponse" class="response info" style="display: none;"></div>
+            </div>
+
+            <!-- Test API Status -->
+            <div class="form-section">
+                <h2>🔍 API Status</h2>
+                <button onclick="testApiStatus()">Test API Status</button>
+                <div id="apiStatusResponse" class="response info" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://node-1d7q7cziz-nitsans-projects-6e90081c.vercel.app';
+        let authToken = null;
+
+        // Check API connection on page load
+        window.addEventListener('load', function() {
+            testApiStatus();
+        });
+
+        // Test API Status
+        async function testApiStatus() {
+            const responseDiv = document.getElementById('apiStatusResponse');
+            const statusDiv = document.getElementById('connectionStatus');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.className = 'status connected';
+                    statusDiv.innerHTML = '🟢 API Connected Successfully';
+                    responseDiv.className = 'response success';
+                    responseDiv.style.display = 'block';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    throw new Error('API not responding correctly');
+                }
+            } catch (error) {
+                statusDiv.className = 'status disconnected';
+                statusDiv.innerHTML = '🔴 API Connection Failed';
+                responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Registration Form Handler
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fullname = document.getElementById('regFullname').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            const responseDiv = document.getElementById('registrationResponse');
+            
+            if (password !== confirmPassword) {
+                responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = 'Error: Passwords do not match!';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fullname,
+                        email,
+                        password,
+                        confirmPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                if (data.success) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Registration Successful!\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Registration Failed:\n\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const responseDiv = document.getElementById('loginResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/sign-in`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                if (data.success) {
+                    responseDiv.className = 'response success';
+                    authToken = data.token;
+                    responseDiv.textContent = `✅ Login Successful!\n\nToken: ${data.token}\n\nUser Info: ${JSON.stringify(data.user, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Login Failed:\n\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Logout Function
+        async function logout() {
+            const responseDiv = document.getElementById('logoutResponse');
+            
+            if (!authToken) {
+                responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = '❌ No authentication token found. Please login first.';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/sign-out`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                if (data.success) {
+                    responseDiv.className = 'response success';
+                    authToken = null;
+                    responseDiv.textContent = `✅ Logout Successful!\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Logout Failed:\n\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

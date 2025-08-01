@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
 require('./models/db');
 const userRouter = require('./routes/user');
@@ -6,6 +7,15 @@ const userRouter = require('./routes/user');
 const User = require('./models/user');
 
 const app = express();
+
+// CORS middleware - allow all origins for testing
+app.use(cors({
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(userRouter);
 
